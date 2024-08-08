@@ -10,30 +10,33 @@ def start_screen(stdscr):
     stdscr.getkey()
 
 def display_text(stdscr, target, current, wpm=0):
-    stdscr.addstr(target)
-    stdscr.addstr(1, 0, f"WPM: {wpm}")
+    stdscr.addstr(0, 0, target)
+    stdscr.addstr(2, 0, f"WPM: {wpm}")
 
     for i, char in enumerate(current):
         color = curses.color_pair(1) if char == target[i] else curses.color_pair(2)
         stdscr.addstr(0, i, char, color)
 
+def read_txt():
+    with open("typing_test.txt", "r") as file:
+        return file.readline().strip()
+
 def wpm_test(stdscr):
-    target_text = "Hello World Welcome to the Typing Test to Get wpm"
+    target_text = read_txt()
     current_text = []
-    wpm = 0
     start_time = time.time()
-    stdscr.nodelay(True)
 
     while True:
         time_elapsed = max(time.time() - start_time, 1)
-        wpm = round((len(current_text) / (time_elapsed / 60)) / 5)
+        
+        # Calculate WPM: (number of characters / 5) / (time_elapsed / 60)
+        wpm = round((len(current_text) / 5) / (time_elapsed / 60))
 
         stdscr.clear()
         display_text(stdscr, target_text, current_text, wpm)
         stdscr.refresh()
 
         if "".join(current_text) == target_text:
-            stdscr.nodelay(False)
             break
 
         try:
@@ -60,7 +63,7 @@ def main(stdscr):
         test_completed = wpm_test(stdscr)
         if not test_completed:
             break
-        stdscr.addstr(2, 0, "You completed the test! Press any key to continue or ESC to exit.")
+        stdscr.addstr(3, 0, "You completed the test! Press any key to continue or ESC to exit.")
         key = stdscr.getkey()
 
         if ord(key) == 27:
